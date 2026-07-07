@@ -1,0 +1,156 @@
+====================================================================
+ Bootstrap 4 (Honoka) クラス名チートシート
+====================================================================
+
+--------------------------------------------------------------------
+0. 命名の文法(これだけ覚える)
+--------------------------------------------------------------------
+
+  部品名 - バリエーション - サイズ
+
+  btn     btn-primary      btn-sm    → 青くて小さいボタン
+  badge   badge-success              → 緑のバッジ
+  alert   alert-danger               → 赤い警告枠
+
+  ・色は全部品で共通の8色(下記)
+  ・outline- が付くと「枠線だけ」になる (btn-outline-danger)
+
+  【共通カラー8色】 btn-○○ / badge-○○ / alert-○○ / bg-○○ / text-○○ 全てに使える
+
+    primary    青      メインの操作
+    secondary  グレー  控えめ
+    success    緑      成功・完了
+    danger     赤      危険・削除
+    warning    黄      注意
+    info       水色    情報
+    dark       黒
+    light      白
+
+--------------------------------------------------------------------
+1. ボタン .btn
+--------------------------------------------------------------------
+
+  <button class="btn btn-primary">登録する</button>
+  <button class="btn btn-sm btn-outline-danger">削除</button>
+  <a href="..." class="btn btn-primary">新規登録</a>   ← aタグでもボタンの見た目に
+
+  サイズ: btn-sm(小) / btn-lg(大)
+  無効化: disabled 属性を付ける
+
+--------------------------------------------------------------------
+2. バッジ .badge
+--------------------------------------------------------------------
+
+  <span class="badge badge-success">読了</span>
+  <span class="badge badge-info">読書中</span>
+  <span class="badge badge-secondary">未読</span>
+  <span class="badge badge-pill badge-primary">5 件</span>   ← pill で丸く
+
+--------------------------------------------------------------------
+3. アラート(メッセージ枠) .alert
+--------------------------------------------------------------------
+
+  <div class="alert alert-success">登録しました</div>
+  <div class="alert alert-danger">書名は必須です。</div>
+
+--------------------------------------------------------------------
+4. テーブル .table
+--------------------------------------------------------------------
+
+  <table class="table table-hover">          ← table-hover: 行にマウスで色
+    <thead class="thead-light">...</thead>   ← 薄グレーのヘッダ
+    <tbody>...</tbody>
+  </table>
+
+  その他: table-striped(縞模様) / table-bordered(罫線) / table-sm(詰める)
+  はみ出し対策: テーブルを <div class="table-responsive"> で包む
+
+--------------------------------------------------------------------
+5. カード(白い箱) .card
+--------------------------------------------------------------------
+
+  <div class="card">
+    <div class="card-body">
+      ここに中身(フォームやテーブルを包むのに便利)
+    </div>
+  </div>
+
+--------------------------------------------------------------------
+6. フォーム .form-group / .form-control
+--------------------------------------------------------------------
+
+  <div class="form-group">                   ← ラベル+入力欄の1セット
+    <label for="title">書名</label>
+    <input type="text" id="title" name="title" class="form-control">
+  </div>
+
+  ※ input / select / textarea に form-control を付けると
+    幅100% + 枠線が整った見た目になる
+
+--------------------------------------------------------------------
+7. ナビバー .navbar
+--------------------------------------------------------------------
+
+  <nav class="navbar navbar-dark bg-primary">   ← navbar-dark: 文字を白に
+    <span class="navbar-brand mb-0 h1">アプリ名</span>
+  </nav>
+
+--------------------------------------------------------------------
+8. レイアウト・余白ユーティリティ
+--------------------------------------------------------------------
+
+  【ページ全体】
+    <div class="container">  … 中央寄せ+左右余白。ページの中身は基本これで包む
+
+  【余白 (margin / padding)】
+    m = margin, p = padding
+    t/b/l/r = 上/下/左/右, x = 左右, y = 上下(無指定は全方向)
+    数字 0〜5 = 大きさ(3 が標準くらい)
+
+    mb-3    → margin-bottom: 1rem
+    mt-4    → margin-top: 1.5rem
+    p-2     → padding 全方向
+    mx-auto → 左右マージン自動(中央寄せ)
+
+  【横並び (flexbox)】
+    d-flex                    → 子要素を横並びに
+    justify-content-between   → 両端に振り分け(左タイトル・右ボタン等)
+    align-items-center        → 縦方向中央ぞろえ
+    d-inline                  → インライン化(フォームを横に並べる時)
+
+  【テキスト】
+    text-center / text-right  → 中央寄せ / 右寄せ
+    text-muted                → 薄いグレー(補足文向け)
+    h1〜h6(クラスとして)     → 見出しの大きさだけ借りる 例: <h2 class="h4">
+    small                     → 小さい文字
+
+  【定番レイアウト実例】タイトル左・ボタン右
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h4 mb-0">書籍一覧</h2>
+      <a href="..." class="btn btn-primary">＋ 新規登録</a>
+    </div>
+
+--------------------------------------------------------------------
+9. Honoka の導入方法(3ステップ)
+--------------------------------------------------------------------
+
+  1. Honoka の css/bootstrap.min.css をプロジェクトの公開フォルダにコピー
+     (Webアプリなら webapp/css/ など WEB-INF の外)
+
+  2. HTML/JSP の <head> で読み込む
+       <link rel="stylesheet" href="css/bootstrap.min.css">
+     JSPなら:
+       <link rel="stylesheet"
+             href="${pageContext.request.contextPath}/css/bootstrap.min.css">
+
+  3. あとは上のクラス名を書くだけ。
+
+  ※ JS (bootstrap.bundle.min.js) はモーダル/ドロップダウン等を使う時だけ必要。
+    その場合は jQuery を先に読み込むこと(Bootstrap 4 の JS 部品は jQuery 依存)。
+    <details> タグや <dialog> タグで代用すれば JS なしでも大体作れる。
+
+--------------------------------------------------------------------
+ ベース: Honoka v4.4.1 (Bootstrap 4.4.1)
+ 詳細: https://getbootstrap.com/docs/4.4/getting-started/introduction/
+ 見た目つきHTML版: honoka-sample-app/webapp/cheatsheet.html
+====================================================================
