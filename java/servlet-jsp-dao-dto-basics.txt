@@ -1,0 +1,111 @@
+====================================================================
+ Servlet + JSP + DAO/DTO の基本構成メモ
+====================================================================
+
+Java の古典的 Web MVC 構成。フレームワークなしで Web アプリを
+作るときの役割分担と、セットで覚えるべき定石をまとめる。
+
+--------------------------------------------------------------------
+1. 役割分担(MVC)
+--------------------------------------------------------------------
+
+  ブラウザ → Servlet(コントローラ) → DAO → DB
+                  │                     ↑
+                  │                DTO に詰め替え
+                  ↓
+     request.setAttribute → JSP(ビュー)で表示
+
+  DTO … データの入れ物。フィールド + getter/setter だけのクラス
+        (DBの1行 = DTOの1インスタンス)
+  DAO … SQL の実行係。SELECT/INSERT/UPDATE/DELETE をメソッドに分ける。
+        SQL はここに集約し、Servlet や JSP には絶対書かない
+  Servlet … リクエストを受けてパラメータ取得 → DAO 呼び出し
+            → 結果を request.setAttribute → JSP に forward
+  JSP … 表示だけ。ロジックは書かない(JSTL の c:forEach 等で回すだけ)
+
+--------------------------------------------------------------------
+2. Servlet の基本形(Jakarta / Tomcat 10 以降)
+--------------------------------------------------------------------
+
+  ※ Tomcat 10 以降は javax.servlet ではなく jakarta.servlet。
+    ネットの古い記事からコピペすると import で死ぬので注意。
+
+  @WebServlet("/books")                    // web.xml 不要で URL マッピング
+  public class BookListServlet extends HttpServlet {
+      private final BookDAO bookDAO = new BookDAO();
+
+      @Override
+      protected void doGet(HttpServletRequest request,
+                           HttpServletResponse response)
+              throws ServletException, IOException {
+          List<BookDTO> books = bookDAO.findAll();
+          request.setAttribute("books", books);
+          request.getRequestDispatcher("/WEB-INF/views/list.jsp")
+                 .forward(request, response);
+      }
+  }
+
+--------------------------------------------------------------------
+3. セットで覚える定石
+--------------------------------------------------------------------
+
+  【PRG パターン (Post-Redirect-Get)】
+    登録・更新・削除の POST 処理の最後は forward ではなく
+      response.sendRedirect(request.getContextPath() + "/books");
+    → F5 リロードでの二重登録を防ぐ
+
+  【JSP は WEB-INF 配下に置く】
+    webapp/WEB-INF/views/list.jsp のように置くと
+    ブラウザから直接 URL でアクセスできなくなる
+    → 必ず Servlet 経由になり、setAttribute 前提の JSP が事故らない
+
+  【PreparedStatement(SQLインジェクション対策)】
+    String sql = "SELECT * FROM books WHERE id = ?";
+    ps.setInt(1, id);
+    → 文字列連結で SQL を組み立てない。絶対に。
+
+  【<c:out>(XSS対策)】
+    JSP で ユーザー入力値を表示するときは
+      <c:out value="${book.title}"/>
+    → ${book.title} の生出しだと <script> を仕込まれる
+
+  【文字化け対策フィルタ】
+    @WebFilter("/*")
+    public class EncodingFilter implements Filter {
+        public void doFilter(...) {
+            request.setCharacterEncoding("UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            chain.doFilter(request, response);
+        }
+    }
+    → 全 Servlet に個別に書かなくて済む
+
+  【forward と sendRedirect の使い分け】
+    forward      … サーバー内で JSP に処理を渡す(URL 変わらない)
+                   → 表示系(GET)はこっち
+    sendRedirect … ブラウザにもう一回リクエストさせる(URL 変わる)
+                   → 更新系(POST)の後はこっち(PRG)
+
+--------------------------------------------------------------------
+4. JSTL(Tomcat 10.1 / Jakarta 版)
+--------------------------------------------------------------------
+
+  taglib の uri が昔と違う(古い記事の http://java.sun.com/... は動かない):
+
+    <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
+    <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+  必要な jar(WEB-INF/lib に置く):
+    - jakarta.servlet.jsp.jstl-api-3.0.0.jar
+    - jakarta.servlet.jsp.jstl-3.0.1.jar (glassfish実装)
+
+  よく使うタグ:
+    <c:forEach var="book" items="${books}"> ... </c:forEach>
+    <c:if test="${not empty keyword}"> ... </c:if>
+    <c:choose><c:when test="..."></c:when><c:otherwise/></c:choose>
+    <c:out value="${...}"/>
+    <fmt:formatDate value="${book.createdAt}" pattern="yyyy/MM/dd"/>
+
+--------------------------------------------------------------------
+ 実例: C:\Project\Hello\honoka-sample-app(蔵書管理サンプル)
+====================================================================

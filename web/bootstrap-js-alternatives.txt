@@ -1,0 +1,72 @@
+====================================================================
+ Bootstrap の JS を使わずに UI 部品を作る代替手段メモ
+====================================================================
+
+Bootstrap 4 の JS 部品(モーダル/ドロップダウン等)は jQuery 依存。
+だが最近の HTML 標準機能でほぼ代替できるので、jQuery も
+bootstrap.bundle.min.js も入れずに済むことが多い。
+
+--------------------------------------------------------------------
+1. 対応表
+--------------------------------------------------------------------
+
+  Bootstrap JS の部品      HTML 標準での代替
+  ----------------------   ------------------------------------------
+  ドロップダウン           <details> + <summary>
+  コラプス(折りたたみ)   <details> + <summary>
+  モーダル                 <dialog> + showModal()/close()
+  ツールチップ             title 属性(ホバーで表示)
+  確認ダイアログ           confirm()(ブラウザ内蔵)
+  フォームバリデーション   required / pattern / min / max 属性
+
+--------------------------------------------------------------------
+2. ドロップダウン/折りたたみ: <details>(JS 完全ゼロ)
+--------------------------------------------------------------------
+
+  <details>
+    <summary class="btn btn-outline-primary">メニュー</summary>
+    <div class="card p-2">
+      <a href="...">項目1</a><br>
+      <a href="...">項目2</a>
+    </div>
+  </details>
+
+  ・クリックで開閉が標準動作。open 属性で初期状態を開にできる
+
+--------------------------------------------------------------------
+3. モーダル: <dialog>(JS は開閉の2行だけ、ライブラリ不要)
+--------------------------------------------------------------------
+
+  <dialog id="deleteDialog" class="card p-3">
+    <p>「走れメロス」を削除しますか?</p>
+    <form method="post" action="/books/delete">
+      <input type="hidden" name="id" value="1">
+      <button class="btn btn-danger">削除する</button>
+      <button type="button" class="btn btn-secondary"
+              onclick="deleteDialog.close()">やめる</button>
+    </form>
+  </dialog>
+
+  <button class="btn btn-outline-danger"
+          onclick="deleteDialog.showModal()">削除</button>
+
+  ・showModal() なら背景が自動で暗くなり、Esc でも閉じられる
+  ・背景のスタイルは dialog::backdrop { background: rgba(0,0,0,.5); }
+
+--------------------------------------------------------------------
+4. 注意点
+--------------------------------------------------------------------
+
+  ・Bootstrap(Honoka)の CSS は .modal 系クラス前提のスタイルなので、
+    <dialog> や <details> にはフルには当たらない。
+    card / btn / p-3 などのクラスを流用しつつ、足りない分だけ自前 CSS
+  ・Bootstrap の JS の実体は「クラス名の付け外し」がほとんどなので、
+    完全再現したければ素の JS 数行(classList.toggle)でも書ける
+  ・逆に部品を大量に使う/アニメーション込みで再現したい場合は、
+    素直に jQuery + bootstrap.bundle.min.js を読み込んだ方が楽
+
+  読み込み順(Bootstrap 4 の JS を使う場合):
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+
+====================================================================
